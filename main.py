@@ -13,13 +13,15 @@ import tornado.autoreload
 import jwc.handlers
 
 define("port", default=8888, help="run on the given port", type=int)
-define("debug",default=True,help="Debug Mode",type=bool)
+define("debug", default=True, help="Debug Mode", type=bool)
+
 
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-                (r'/u/info', jwc.handlers.JWCInfoHandler),
-                ]
+            (r'/u/info', jwc.handlers.StudentInfoHandler),
+            (r'/u/score', jwc.handlers.ScoreHandlers),
+        ]
         settings = dict(
             # template_path = os.path.join(os.path.dirname(__file__), "templates"),
             # static_path=os.path.join(os.path.dirname(__file__), "static"),
