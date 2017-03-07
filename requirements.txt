@@ -1,3 +1,5 @@
 tornado
+tornado-cors
 beautifulsoup4
 requests
+ujson
