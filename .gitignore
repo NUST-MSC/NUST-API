@@ -58,3 +58,11 @@ target/
 
 # PyCharm
 .idea/
+
+# VSCode
+.vscode/
+
+*~
+*.swp
+.DS_Store
+dump.rdb
