@@ -37,7 +37,7 @@ class StudentInfoHandler(BaseHandler):
         user, pwd = map(self.get_argument, ["user", "pwd"])
         res = yield async_get_info(user, pwd)
         if res["status"] == "error":
-            self.send_error(400)
+            self.set_status(400)
             self.write(res["data"])
             self.finish()
             return
@@ -84,7 +84,7 @@ class ScoreHandler(BaseHandler):
         user, pwd = map(self.get_argument, ['user', 'pwd'])
         res = yield async_get_score(user, pwd)
         if res["status"] == "error":
-            self.send_error(400)
+            self.set_status(400)
             self.finish(res["data"])
             return
         content = res["data"]
@@ -126,7 +126,7 @@ class ExamHandler(BaseHandler):
         current_term = get_current_term()
         res = yield async_post_exam(user, pwd, current_term)
         if res["status"] == "error":
-            self.send_error(400)
+            self.set_status(400)
             self.finish(res["data"])
             return
         soup = BeautifulSoup(res["data"])
