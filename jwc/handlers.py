@@ -62,7 +62,7 @@ class StudentInfoHandler(BaseHandler):
         <td.*?>&nbsp;(?P<subject>.*?)</td>
         .*?</tr>
         '''
-        print(res)
+        # print(res)
         p = re.compile(patt, re.DOTALL | re.MULTILINE | re.VERBOSE)
         result = p.search(res["data"])
         res = {
@@ -91,7 +91,7 @@ class ScoreHandler(BaseHandler):
         soup = BeautifulSoup(content.replace('\n', ''))
         table_tag = soup.find(id="dataList")
         table = traverse_table(table_tag)
-        print(table)
+        # print(table)
         res = {}
         class_ids = set()
         for row in table["body"]:
