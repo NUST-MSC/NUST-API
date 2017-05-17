@@ -62,4 +62,5 @@ class MemCache(Cache):
         return self
 
     def remove(self, key):
-        del self._dict[key]
+        if key in self._dict:
+            del self._dict[key]
