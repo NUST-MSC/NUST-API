@@ -29,6 +29,7 @@ class Application(tornado.web.Application):
             (r'/jwc/info', jwc.handlers.StudentInfoHandler),
             (r'/jwc/score', jwc.handlers.ScoreHandler),
             (r'/jwc/exam', jwc.handlers.ExamHandler),
+            (r'/jwc/table', jwc.handlers.TableHandler)
         ]
         settings = dict(
             debug=options.debug,
