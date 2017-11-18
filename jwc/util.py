@@ -53,6 +53,7 @@ def get_class_sys_data():
 def get_current_term():
     def fetch_curent_term():
         """ 请求查询当前学期, 跑去考试安排查询看看默认的学期即可
+            添加课表查询，需要基于当前学期查看学期开学时间
         """
         user = os.getenv("TEST_JWC_USER") or input("测试教务处帐号:")
         pwd = os.getenv("TEST_JWC_PWD") or input("测试教务处密码:")
@@ -60,7 +61,10 @@ def get_current_term():
         r = http.get(jwc_domain + '/njlgdx/xsks/xsksap_query?Ves632DSdyV=NEW_XSD_KSBM')
         content = r.text
         term = re.search(r"<option selected value=\".*?\">(?P<term>.*?)</option>", content, re.S).group('term')
-        return term
+        content = http.get(jwc_domain + '/njlgdx/jxzl/jxzl_query?Ves632DSdyV=NEW_XSD_WDZM', params={'xnxq01id': term}).text
+        date = re.search(r"<tr height=\'28\'><td>1</td><td title=\'(\d+)年(\d+)月(\d+)\'>", content, re.S)
+        startDate = date.group(1) + '/' + date.group(2) + '/' + date.group(3)
+        return dict(term=term, startDate=startDate)
     now = datetime.datetime.now()
     key = '{0}/{1}'.format(now.year, now.month)
     data = cache.get(key)
@@ -70,8 +74,8 @@ def get_current_term():
         cache.set(key, fetch_curent_term())
         return cache.get(key)
 
-get_current_term()
-print('获取当前学期:\n{0}'.format(get_current_term()))
+data = get_current_term()
+print('获取当前学期:\n{0}\n获取开学日期:\n{1}'.format(data['term'], data['startDate']))
 
 
 def jwc_hash_key(username, password):
@@ -208,6 +212,13 @@ def async_get_info(username, password):
     res = yield async_content(username, password, '/njlgdx/grxx/xsxx')
     raise gen.Return(res)
 
+@gen.coroutine
+def async_get_table(username, password, term):
+    data = dict(xnxq01id=term)
+    res = yield async_content(username, password, '/njlgdx/xskb/xskb_list.do',
+                              method="GET", data=data)
+    raise gen.Return(res)
+
 
 # 默认的行处理函数, 用于查询成绩, 考试中的dataList处理
 default_row2list = lambda r: [unicode_type(d.string) or '' for d in r.contents if not(isinstance(d, bs4.element.NavigableString) and d.isspace())]
@@ -231,4 +242,37 @@ def traverse_table(table_tag, head2list=None, row2list=None):
         if not isinstance(row, bs4.element.NavigableString):
             res["body"].append(row2list(row))
     return res
-    
+
+
+def transweeks(weeks):
+    result = []
+    weeks = weeks.split(',')
+    for w in weeks:
+        w = w.split('-')
+        if(len(w) == 1):
+            try:
+                result.append(int(w[0]))
+            except ValueError:
+                continue
+        else:
+            result += list(range(int(w[0]), int(w[1]) + 1))
+    return result
+
+
+def handlerkb(kb, patt):
+    kbtable = []
+    if kb.string == '\xa0':
+        return kbtable
+    content = str(kb).replace('<br/>', '')
+    content = re.split('--+', re.sub('<\/?div.*?>', '', content))
+    for c in content:
+        results = patt.search(c)
+        kbtable.append({
+            'name': results.group('name'),
+            'class': results.group('class'),
+            'teacher': results.group('teacher'),
+            'raw_weeks': results.group('weeks'),
+            'weeks': transweeks(results.group('weeks')),
+            'room': results.group('room')
+        })
+    return kbtable

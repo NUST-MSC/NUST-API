@@ -11,9 +11,9 @@ import requests
 from bs4 import BeautifulSoup
 
 from interface import BaseHandler
-from jwc.util import async_get_info, async_get_score, async_post_exam
+from jwc.util import async_get_info, async_get_score, async_post_exam, async_get_table
 from jwc.util import traverse_table
-from jwc.util import get_class_sys_data, get_current_term
+from jwc.util import get_class_sys_data, get_current_term, handlerkb
 
 jwc_domain = 'http://202.119.81.112:9080'
 
@@ -123,7 +123,7 @@ class ExamHandler(BaseHandler):
     @gen.coroutine
     def get(self):
         user, pwd = map(self.get_argument, ['user', 'pwd'])
-        current_term = get_current_term()
+        current_term = get_current_term()['term']
         res = yield async_post_exam(user, pwd, current_term)
         if res["status"] == "error":
             self.set_status(400)
@@ -132,3 +132,29 @@ class ExamHandler(BaseHandler):
         soup = BeautifulSoup(res["data"])
         table = traverse_table(soup.find(id="dataList"))
         self.write(json.dumps(table["body"]))
+
+
+class TableHandler(BaseHandler):
+
+    @gen.coroutine
+    def get(self):
+        user, pwd = map(self.get_argument, ['user', 'pwd'])
+        current_term = get_current_term()['term']
+        startDate = get_current_term()['startDate']
+        res = yield async_get_table(user, pwd, current_term)
+        if res["status"] == "error":
+            self.set_status(400)
+            self.finish(res["data"])
+            return
+        soup = BeautifulSoup(res["data"])
+        kbs = soup(class_='kbcontent', limit=35)
+        patt = re.compile('(?P<name>.*?)' +
+                          '(?:<font\stitle=\"分组名\">(?P<class>.*?)</font>)?' +
+                          '(?:<font\stitle=\"老师\">(?P<teacher>.*?)</font>)?' +
+                          '<font\stitle=\"周次.*?\">(?P<weeks>.*?)\(周\)</font>' +
+                          '(?:<font\stitle=\"教室\">(?P<room>.*?)</font>)?')
+        result = [[] for i in range(7)]
+        for i in range(0, 35):
+            result[i % 7].append(handlerkb(kbs[i], patt))
+        data = dict(table=result, startDate=startDate)
+        self.write(data)
