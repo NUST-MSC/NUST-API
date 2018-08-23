@@ -75,7 +75,7 @@ def get_current_term():
         return cache.get(key)
 
 data = get_current_term()
-print('获取当前学期:\n{0}\n获取开学日期:\n{1}'.format(data['term'], data['startDate']))
+print('get current term:\n{0}\nterm begins:\n{1}'.format(data['term'], data['startDate']))
 
 
 def jwc_hash_key(username, password):
@@ -276,3 +276,4 @@ def handlerkb(kb, patt):
             'room': results.group('room')
         })
     return kbtable
+
