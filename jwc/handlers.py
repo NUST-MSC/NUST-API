@@ -103,7 +103,7 @@ class ScoreHandler(BaseHandler):
                 if float(row[4]) >= 60.0:
                     class_ids.add(row[2])
             except ValueError:
-                if row[4] in [u'优秀', u'良好', u'中等', u'及格']:
+                if row[4] in [u'优秀', u'良好', u'中等', u'及格', u'通过']:
                     class_ids.add(row[2])
         res = OrderedDict(sorted(res.items(), key=lambda x: x[0], reverse=True))
         syss = ['foreign', 'humanity', 'science']
