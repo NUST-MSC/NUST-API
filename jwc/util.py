@@ -63,7 +63,10 @@ def get_current_term():
         term = re.search(r"<option selected value=\".*?\">(?P<term>.*?)</option>", content, re.S).group('term')
         content = http.get(jwc_domain + '/njlgdx/jxzl/jxzl_query?Ves632DSdyV=NEW_XSD_WDZM', params={'xnxq01id': term}).text
         date = re.search(r"<tr height=\'28\'><td>1</td><td title=\'(\d+)年(\d+)月(\d+)\'>", content, re.S)
-        startDate = date.group(1) + '/' + date.group(2) + '/' + date.group(3)
+        if date is None:
+            startDate = None
+        else:
+            startDate = date.group(1) + '/' + date.group(2) + '/' + date.group(3)
         return dict(term=term, startDate=startDate)
     now = datetime.datetime.now()
     key = '{0}/{1}'.format(now.year, now.month)
