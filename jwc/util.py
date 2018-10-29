@@ -64,7 +64,7 @@ def get_current_term():
         content = http.get(jwc_domain + '/njlgdx/jxzl/jxzl_query?Ves632DSdyV=NEW_XSD_WDZM', params={'xnxq01id': term}).text
         date = re.search(r"<tr height=\'28\'><td>1</td><td title=\'(\d+)年(\d+)月(\d+)\'>", content, re.S)
         if date is None:
-            startDate = None
+            startDate = os.getenv("START_DATE") or input("输入开学日期(XXXX/XX/XX):")
         else:
             startDate = date.group(1) + '/' + date.group(2) + '/' + date.group(3)
         return dict(term=term, startDate=startDate)
